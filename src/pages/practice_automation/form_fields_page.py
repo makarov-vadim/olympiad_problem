@@ -1,11 +1,10 @@
 import random
-import time
 
 import allure
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
-from src.configs.form_fields_page_config import FormFieldsPageURLS
+from src.configs.form_fields_page_config import FormFieldsPageExpectedResults, FormFieldsPageURLS
 from src.helpers.helper import generate_email, generate_full_name, generate_password
 from src.pages.base_page import BasePage
 
@@ -25,7 +24,6 @@ class FormFieldsPage(BasePage):
 
     DROPDOWN_LIST_AUTOMATION = (By.XPATH, '//*[@id="automation"]')
     DROPDOWN_LIST_AUTOMATION_VALUES = (By.XPATH, '//*[@id="automation"]/option')
-    # DROPDOWN_LIST_AUTOMATION_YES = (By.CSS_SELECTOR, "[value='yes']")
 
     LIST_AUTOMATION_TOOLS = (By.XPATH, '//*[@id="feedbackForm"]/ul/li')
 
@@ -50,35 +48,39 @@ class FormFieldsPage(BasePage):
         assert not self._is_alert_present(), "Всплывающее окно присутствует"
 
 
-
     @allure.step("Ввод пустого значения в поле Name")
     def enter_empty_name(self):
         self._enter_name("")
+        self._add_screenshot_to_report()
 
     @allure.step("Ввод случайного имени в поле Name")
     def enter_name(self):
         self._enter_name(generate_full_name())
+        self._add_screenshot_to_report()
 
     @allure.step("Ввод случайного пароля в поле Password")
     def enter_password(self):
         self._enter_text(self.FIELD_PASSWORD, generate_password())
+        self._add_screenshot_to_report()
 
     @allure.step("Ввод случайной электронной почты в поле Email")
     def enter_email(self):
         self._enter_text(self.FIELD_EMAIL, generate_email())
+        self._add_screenshot_to_report()
 
     @allure.step("Ввод элементов Automation tools в поле Message")
     def enter_message(self):
         automation_tools = self._get_automation_tools()
-        # automation_tools_texts = [f"{automation_tool.text}\n" for automation_tool in automation_tools]
         automation_tools_texts = "\n".join([automation_tool.text for automation_tool in automation_tools])
         self._enter_text(self.FIELD_MESSAGE, automation_tools_texts)
+        self._add_screenshot_to_report()
 
     @allure.step("Выбор случайного любимого напитка")
     def click_random_favorite_drink(self):
         favorite_drinks = self._get_favorite_drinks()
         favorite_drink = random.choice(favorite_drinks)
         favorite_drink.click()
+        self._add_screenshot_to_report()
 
     @allure.step("Выбор всех любимых напитков")
     def click_all_favorite_drinks(self):
@@ -86,6 +88,7 @@ class FormFieldsPage(BasePage):
         for favorite_drink in favorite_drinks:
             if not favorite_drink.is_selected():
                 favorite_drink.click()
+        self._add_screenshot_to_report()
 
     def choice_favorite_drink(self, favorite_drink: str):
         _choices = {
@@ -100,12 +103,14 @@ class FormFieldsPage(BasePage):
         favorite_colors = self._find_elements(self.RADIOBUTTONS_FAVORITE_COLORS)
         favorite_color = random.choice(favorite_colors)
         favorite_color.click()
+        self._add_screenshot_to_report()
 
     @allure.step('Выбор случайного ответа на вопрос "Do you like automation?"')
     def click_random_automation(self):
         options = self._get_dropdown_options(self.DROPDOWN_LIST_AUTOMATION)
         option_index = random.randint(0, len(options) - 1)
         self._select_in_dropdown(self.DROPDOWN_LIST_AUTOMATION, index=option_index)
+        self._add_screenshot_to_report()
 
     @allure.step("Нажатие кнопки SUBMIT")
     def click_submit(self):
@@ -120,6 +125,12 @@ class FormFieldsPage(BasePage):
     def assert_form_submitted(self):
         self._assert_alert_is_present()
         alert = self._get_alert()
+        alert_text = alert.text
+        alert.accept()
 
-        assert alert.text == "Message received!"
+        self._assert_text(
+            element_name="alert",
+            current_text=alert_text,
+            expected_text=FormFieldsPageExpectedResults.ALERT_TEXT,
+        )
 

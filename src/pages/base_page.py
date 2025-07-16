@@ -1,13 +1,14 @@
-import time
 from random import randint
 from time import sleep
 
+import allure
 from selenium.common import NoAlertPresentException
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
 
@@ -25,49 +26,37 @@ class BasePage:
         self.driver.maximize_window()
         return self.driver.get(self.url)
 
-    def _get_focused_element(self) -> WebElement:
-        return self.driver.switch_to.active_element
-
-    def _get_alert(self):
-        return self.driver.switch_to.alert
 
     def _wait_until_visibility(self, element: WebElement) -> None:
+        """
+        Ожидает, пока указанный веб-элемент станет видимым на странице.
+
+        Args:
+            element (WebElement): веб-элемент, видимость которого необходимо дождаться
+        Returns:
+            None
+        Raises:
+            TimeoutException: если элемент не стал видимым в течение заданного времени
+        """
         WebDriverWait(self.driver, self.timeout).until(
             EC.visibility_of(element)
         )
-
-    def _is_alert_present(self):
-        try:
-            self._get_alert()
-            return True
-        except NoAlertPresentException:
-            return False
-
-
-    def _assert_element_is_focused(self, locator: tuple[str, str]) -> None:
-        element = self._find_element(locator)
-        # self._wait_until_visibility(element)
-        assert element.is_displayed(), "Заданный элемент не виден"
-        assert element == self._get_focused_element(), "Фокус не на заданном элементе"
-
 
 
     def _scroll_to(self, element: WebElement) -> None:
+        """
+        Прокручивает страницу до указанного элемента и ожидает его видимости.
+
+        Args:
+            element (WebElement): веб-элемент, до которого необходимо прокрутить страницу
+        Returns:
+            None
+        Raises:
+            TimeoutException: если элемент не стал видимым в течение заданного времени
+        """
         actions = ActionChains(self.driver)
         actions.move_to_element(element).perform()
-
-        WebDriverWait(self.driver, self.timeout).until(
-            EC.visibility_of(element)
-        )
-
-    def _get_dropdown_options(self, dropdown_locator: tuple[str, str]) -> list[WebElement]:
-        return Select(self._find_element(dropdown_locator)).options
-
-
-    def _select_in_dropdown(self, dropdown_locator: tuple[str, str], index: int = 0) -> None:
-        select = Select(self._find_element(dropdown_locator))
-        self._scroll_to(self._find_element(dropdown_locator))
-        select.select_by_index(index)
+        self._wait_until_visibility(element)
 
 
     def _find_element(self, locator: tuple[str, str]) -> WebElement:
@@ -163,25 +152,93 @@ class BasePage:
         return search_field
 
 
-    def _assert_url(self, expected_url: str, timeout: float | None = None) -> None:
+    def _get_focused_element(self) -> WebElement:
         """
-        Метод использует явное ожидание загрузки страницы с ожидаемым URL.
+        Возвращает текущий активный (сфокусированный) элемент в веб-браузере.
+
+        Returns:
+            WebElement: объект WebElement, представляющий текущий активный элемент.
+        """
+        return self.driver.switch_to.active_element
+
+
+    def _get_alert(self) -> Alert:
+        """
+        Возвращает всплывающее окно (alert/prompt/confirm).
+
+        Returns:
+            Alert: объект Alert, представляющий текущее модальное окно оповещения
+        Raises:
+            NoAlertPresentException: если в данный момент нет активного оповещения
+            TimeoutException: если время ожидания появления оповещения истекло
+        """
+        return self.driver.switch_to.alert
+
+
+    def _is_alert_present(self):
+        """
+        Проверяет наличие модального окна оповещения (alert/prompt/confirm) в текущем окне браузера.
+
+        Returns:
+            bool:
+                True, если модальное окно оповещения присутствует
+                False, если оповещения нет
+        """
+        try:
+            self._get_alert()
+            return True
+        except NoAlertPresentException:
+            return False
+
+
+    def _get_dropdown_options(self, dropdown_locator: tuple[str, str]) -> list[WebElement]:
+        """
+        Получает список всех доступных опций из выпадающего списка.
 
         Args:
-            expected_url (str): Ожидаемый URL, загрузку которого необходимо дождаться.
-            timeout (float | None): Время ожидания загрузки страницы. Если не задано, определяется как self.timeout
+            dropdown_locator (tuple[str, str]): Кортеж, содержащий тип локатора и значение.
+                Первый элемент - тип локатора (например, 'xpath', 'css selector').
+                Второй элемент - значение локатора.
+        Returns:
+            list[WebElement]: список веб-элементов, представляющих опции выпадающего списка
+        """
+        return Select(self._find_element(dropdown_locator)).options
+
+
+    def _select_in_dropdown(self, dropdown_locator: tuple[str, str], index: int = 0) -> None:
+        """
+        Выбирает опцию в выпадающем списке по указанному индексу.
+
+        Args:
+            dropdown_locator (tuple[str, str]): Кортеж, содержащий тип локатора и значение.
+                Первый элемент - тип локатора (например, 'xpath', 'css selector').
+                Второй элемент - значение локатора,
+            index (int): индекс опции, которую необходимо выбрать (по умолчанию 0 - первая опция)
         Returns:
             None
         Raises:
-            TimeoutException: Если страница с ожидаемым URL не загружается дольше заданного времени.
-                Сообщение:
-                Текущий URL ({self.driver.current_url}) не соответствует ожидаемому ({expected_url})
+            IndexError: если указанный индекс выходит за пределы доступных опций
+            TimeoutException: если элемент не стал видимым в течение заданного времени
         """
+        select = Select(self._find_element(dropdown_locator))
+        self._scroll_to(self._find_element(dropdown_locator))
+        select.select_by_index(index)
 
-        if timeout is None:
-            timeout = self.timeout
-        message = f"Текущий URL ({self.driver.current_url}) не соответствует ожидаемому ({expected_url})"
-        WebDriverWait(self.driver, timeout).until(EC.url_to_be(expected_url), message=message)
+
+    def _add_screenshot_to_report(self):
+        """
+        Добавляет скриншот текущей страницы в отчет тестирования.
+
+        Returns:
+            None
+        Raises:
+            WebDriverException: если произошла ошибка при получении скриншота
+        """
+        allure.attach(
+            self.driver.get_screenshot_as_png(),
+            name='screenshot',
+            attachment_type=allure.attachment_type.PNG
+        )
 
 
     @staticmethod
@@ -204,3 +261,22 @@ class BasePage:
 
         assert current_text == expected_text, \
             f'Текущий текст элемента "{element_name}" ({current_text}) не соответствует ожидаемому ({expected_text})'
+
+
+    def _assert_element_is_focused(self, locator: tuple[str, str]) -> None:
+        """
+        Проверяет, что указанный элемент присутствует на странице, виден и имеет фокус ввода.
+
+        Args:
+            locator (tuple[str, str]): Кортеж, содержащий тип локатора и значение.
+                Первый элемент - тип локатора (например, 'xpath', 'css selector').
+                Второй элемент - значение локатора.
+        Returns:
+            None
+        Raises:
+            AssertionError: если элемент не виден или не имеет фокус
+        """
+        element = self._find_element(locator)
+        self._wait_until_visibility(element)
+        assert element.is_displayed(), "Заданный элемент не виден"
+        assert element == self._get_focused_element(), "Фокус не на заданном элементе"

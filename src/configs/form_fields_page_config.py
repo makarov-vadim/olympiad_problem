@@ -3,4 +3,4 @@ class FormFieldsPageURLS:
 
 
 class FormFieldsPageExpectedResults:
-    pass
+    ALERT_TEXT = "Message received!"

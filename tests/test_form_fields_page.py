@@ -1,8 +1,7 @@
-import time
-
 import allure
 import pytest
 
+# @pytest.mark.skip
 @allure.epic("Тесты сайта practice-automation.com")
 @allure.feature("Тест-сьют 1. Страница Form Fields")
 class TestFormFieldsPage:

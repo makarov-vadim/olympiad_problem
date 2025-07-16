@@ -2,7 +2,7 @@ import time
 from random import randint
 from time import sleep
 
-
+from selenium.common import NoAlertPresentException
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -25,6 +25,32 @@ class BasePage:
         self.driver.maximize_window()
         return self.driver.get(self.url)
 
+    def _get_focused_element(self) -> WebElement:
+        return self.driver.switch_to.active_element
+
+    def _get_alert(self):
+        return self.driver.switch_to.alert
+
+    def _wait_until_visibility(self, element: WebElement) -> None:
+        WebDriverWait(self.driver, self.timeout).until(
+            EC.visibility_of(element)
+        )
+
+    def _is_alert_present(self):
+        try:
+            self._get_alert()
+            return True
+        except NoAlertPresentException:
+            return False
+
+
+    def _assert_element_is_focused(self, locator: tuple[str, str]) -> None:
+        element = self._find_element(locator)
+        # self._wait_until_visibility(element)
+        assert element.is_displayed(), "Заданный элемент не виден"
+        assert element == self._get_focused_element(), "Фокус не на заданном элементе"
+
+
 
     def _scroll_to(self, element: WebElement) -> None:
         actions = ActionChains(self.driver)
@@ -40,6 +66,7 @@ class BasePage:
 
     def _select_in_dropdown(self, dropdown_locator: tuple[str, str], index: int = 0) -> None:
         select = Select(self._find_element(dropdown_locator))
+        self._scroll_to(self._find_element(dropdown_locator))
         select.select_by_index(index)
 
 
@@ -63,7 +90,7 @@ class BasePage:
             EC.presence_of_element_located(locator),
             message=f"Can't find element by locator {locator}",
         )
-        self._scroll_to(element)
+        # self._scroll_to(element)
         return element
 
 

@@ -1,4 +1,5 @@
 import random
+import time
 
 import allure
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -42,6 +43,14 @@ class FormFieldsPage(BasePage):
     def _get_automation_tools(self):
         return self._find_elements(self.LIST_AUTOMATION_TOOLS)
 
+    def _assert_alert_is_present(self):
+        assert self._is_alert_present(), "Всплывающее окно отсутствует"
+
+    def _assert_alert_is_not_present(self):
+        assert not self._is_alert_present(), "Всплывающее окно присутствует"
+
+
+
     @allure.step("Ввод пустого значения в поле Name")
     def enter_empty_name(self):
         self._enter_name("")
@@ -78,7 +87,15 @@ class FormFieldsPage(BasePage):
             if not favorite_drink.is_selected():
                 favorite_drink.click()
 
-    @allure.step("Выбор случайного любимого напитка")
+    def choice_favorite_drink(self, favorite_drink: str):
+        _choices = {
+            "any": self.click_random_favorite_drink,
+            "all": self.click_all_favorite_drinks,
+        }
+        _choices[favorite_drink]()
+
+
+    @allure.step("Выбор случайного любимого цвета")
     def click_random_favorite_color(self):
         favorite_colors = self._find_elements(self.RADIOBUTTONS_FAVORITE_COLORS)
         favorite_color = random.choice(favorite_colors)
@@ -94,4 +111,15 @@ class FormFieldsPage(BasePage):
     def click_submit(self):
         self._click_element(self.BUTTON_SUBMIT)
 
+    @allure.step("Проверка того, что форма не была отправлена")
+    def assert_form_not_submitted(self):
+        self._assert_alert_is_not_present()
+        self._assert_element_is_focused(self.FIELD_NAME)
+
+    @allure.step("Проверка того, что форма была отправлена")
+    def assert_form_submitted(self):
+        self._assert_alert_is_present()
+        alert = self._get_alert()
+
+        assert alert.text == "Message received!"
 

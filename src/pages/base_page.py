@@ -1,3 +1,4 @@
+import random
 from random import randint
 from time import sleep
 
@@ -79,7 +80,6 @@ class BasePage:
             EC.presence_of_element_located(locator),
             message=f"Can't find element by locator {locator}",
         )
-        # self._scroll_to(element)
         return element
 
 
@@ -149,6 +149,15 @@ class BasePage:
         for char in text:
             search_field.send_keys(char)
             sleep(randint(10, 30) / 1000)
+        return search_field
+
+
+    def _enter_file_path(self, locator: tuple[str, str], file_path: str) -> WebElement:
+        """"""
+        search_field = self._find_element(locator)
+        self._scroll_to(search_field)
+        search_field.clear()
+        search_field.send_keys(file_path)
         return search_field
 
 
@@ -223,6 +232,13 @@ class BasePage:
         select = Select(self._find_element(dropdown_locator))
         self._scroll_to(self._find_element(dropdown_locator))
         select.select_by_index(index)
+
+
+    def _select_random_in_dropdown(self, locator: tuple[str, str]):
+        """"""
+        options = self._get_dropdown_options(locator)
+        option_index = random.randint(0, len(options) - 1)
+        self._select_in_dropdown(locator, index=option_index)
 
 
     def _add_screenshot_to_report(self):

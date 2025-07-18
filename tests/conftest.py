@@ -1,17 +1,28 @@
 import allure
 import pytest
 from selenium import webdriver
+from seleniumwire import webdriver as webdriver_wire
+
 
 from src.pages.practice_automation.click_events_page import ClickEventsPage
 from src.pages.practice_automation.form_fields_page import FormFieldsPage
 from src.pages.practice_automation.popups_page import PopupsPage
+from src.pages.way2automation.registration_page import RegistrationPage
 
 
 @pytest.fixture(scope="function")
 def driver():
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    driver = webdriver.Chrome(options=options)
     yield driver
     driver.quit()
+
+@pytest.fixture(scope="function")
+def driver_wire():
+    driver = webdriver_wire.Chrome()
+    yield driver
+    driver.quit()
+
 
 @pytest.fixture(scope="function")
 def form_fields_page(driver):
@@ -38,3 +49,10 @@ def popups_page(driver):
     popups_page = PopupsPage(driver)
     popups_page.open()
     yield popups_page
+
+@pytest.fixture(scope="function")
+def registration_page(driver_wire):
+    registration_page = RegistrationPage(driver_wire)
+    registration_page.open()
+    yield registration_page
+

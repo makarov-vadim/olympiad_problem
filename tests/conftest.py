@@ -3,11 +3,11 @@ import pytest
 from selenium import webdriver
 from seleniumwire import webdriver as webdriver_wire
 
-
 from src.pages.practice_automation.click_events_page import ClickEventsPage
 from src.pages.practice_automation.form_fields_page import FormFieldsPage
 from src.pages.practice_automation.popups_page import PopupsPage
 from src.pages.way2automation.registration_page import RegistrationPage
+from src.fixtures.registration_page_fixtures import fields_data
 
 
 @pytest.fixture(scope="function")
@@ -56,3 +56,17 @@ def registration_page(driver_wire):
     registration_page.open()
     yield registration_page
 
+@pytest.fixture(scope="function")
+def registration_page_without_hobby(registration_page, fields_data):
+    registration_page.fill_required_fields(fields_data, missed_field_name="hobby")
+    yield registration_page
+
+@pytest.fixture(scope="function")
+def registration_page_without_email(registration_page, fields_data):
+    registration_page.fill_required_fields(fields_data, missed_field_name="email")
+    yield registration_page
+
+@pytest.fixture(scope="function")
+def registration_page_with_required_fields(registration_page, fields_data):
+    registration_page.fill_required_fields(fields_data)
+    yield registration_page

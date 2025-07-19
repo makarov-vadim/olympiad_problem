@@ -27,31 +27,31 @@ https://way2automation.com/way2auto_jquery/registration.php#load_box
     </tr>
     <tr>
         <td>1</td>
-        <td>first_name_value</td>
+        <td>NONE</td>
         <td>hobby_value</td>
         <td>phone_number_value</td>
         <td>username_value</td>
         <td>email_value</td>
         <td>password_value</td>
-        <td>NONE</td>
+        <td>password_value</td>
     </tr>
     <tr>
         <td>2</td>
         <td>first_name_value</td>
-        <td>hobby_value</td>
+        <td>NONE</td>
         <td>phone_number_value</td>
         <td>username_value</td>
         <td>email_value</td>
-        <td>NONE</td>
+        <td>password_value</td>
         <td>password_value</td>
     </tr>
     <tr>
         <td>3</td>
         <td>first_name_value</td>
         <td>hobby_value</td>
-        <td>phone_number_value</td>
-        <td>username_value</td>
         <td>NONE</td>
+        <td>username_value</td>
+        <td>email_value</td>
         <td>password_value</td>
         <td>password_value</td>
     </tr>
@@ -69,31 +69,31 @@ https://way2automation.com/way2auto_jquery/registration.php#load_box
         <td>5</td>
         <td>first_name_value</td>
         <td>hobby_value</td>
-        <td>NONE</td>
+        <td>phone_number_value</td>
         <td>username_value</td>
-        <td>email_value</td>
+        <td>NONE</td>
         <td>password_value</td>
         <td>password_value</td>
     </tr>
     <tr>
         <td>6</td>
         <td>first_name_value</td>
-        <td>NONE</td>
+        <td>hobby_value</td>
         <td>phone_number_value</td>
         <td>username_value</td>
         <td>email_value</td>
-        <td>password_value</td>
+        <td>NONE</td>
         <td>password_value</td>
     </tr>
     <tr>
         <td>7</td>
-        <td>NONE</td>
+        <td>first_name_value</td>
         <td>hobby_value</td>
         <td>phone_number_value</td>
         <td>username_value</td>
         <td>email_value</td>
         <td>password_value</td>
-        <td>password_value</td>
+        <td>NONE</td>
     </tr>
 </table>
 

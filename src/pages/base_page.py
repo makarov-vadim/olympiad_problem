@@ -1,5 +1,4 @@
-from random import randint
-from time import sleep
+import random
 
 import allure
 from selenium.common import NoAlertPresentException
@@ -79,7 +78,6 @@ class BasePage:
             EC.presence_of_element_located(locator),
             message=f"Can't find element by locator {locator}",
         )
-        # self._scroll_to(element)
         return element
 
 
@@ -130,8 +128,7 @@ class BasePage:
 
     def _enter_text(self, locator: tuple[str, str], text: str) -> WebElement:
         """
-        Метод находит поле ввода, очищает его и вводит указанный текст,
-        имитируя ручной ввод с небольшой задержкой между символами.
+        Метод находит поле ввода, очищает его и вводит указанный текст.
 
         Args:
             locator (tuple[str, str]): Кортеж, содержащий тип локатора и значение.
@@ -145,10 +142,29 @@ class BasePage:
         """
 
         search_field = self._click_element(locator)
+        self._scroll_to(search_field)
         search_field.clear()
-        for char in text:
-            search_field.send_keys(char)
-            sleep(randint(10, 30) / 1000)
+        search_field.send_keys(text)
+        return search_field
+
+
+    def _enter_file_path(self, locator: tuple[str, str], file_path: str) -> WebElement:
+        """Вводит путь к файлу в указанное поле и возвращает элемент поля ввода.
+
+        Args:
+            locator (tuple[str, str]): Кортеж, содержащий тип локатора и значение.
+                Первый элемент - тип локатора (например, 'xpath', 'css selector')
+                Второй элемент - значение локатора
+            file_path (str): Путь к файлу, который нужно ввести в поле.
+        Returns:
+            WebElement: Веб-элемент поля, в которое был введен текст.
+        Raises:
+            TimeoutException: Если поле ввода не найдено в течение заданного времени.
+        """
+        search_field = self._find_element(locator)
+        self._scroll_to(search_field)
+        search_field.clear()
+        search_field.send_keys(file_path)
         return search_field
 
 
@@ -223,6 +239,24 @@ class BasePage:
         select = Select(self._find_element(dropdown_locator))
         self._scroll_to(self._find_element(dropdown_locator))
         select.select_by_index(index)
+
+
+    def _select_random_in_dropdown(self, dropdown_locator: tuple[str, str]):
+        """Выбирает случайный вариант из выпадающего списка.
+
+        Args:
+            dropdown_locator (tuple[str, str]): Кортеж, содержащий тип локатора и значение.
+                Первый элемент - тип локатора (например, 'xpath', 'css selector').
+                Второй элемент - значение локатора,
+        Returns:
+            None
+        Raises:
+            IndexError: если указанный индекс выходит за пределы доступных опций
+            TimeoutException: если элемент не стал видимым в течение заданного времени
+        """
+        options = self._get_dropdown_options(dropdown_locator)
+        option_index = random.randint(0, len(options) - 1)
+        self._select_in_dropdown(dropdown_locator, index=option_index)
 
 
     def _add_screenshot_to_report(self):
